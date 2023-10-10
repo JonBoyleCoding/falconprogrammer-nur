@@ -29,6 +29,11 @@ def main():
 
 	let_string += "\n"
 
+	# Limit packages to specific versions
+	limit_python_versions = {
+		"llama-cpp-python": ["310", "311"],
+	}
+
 	######
 	# Generate the package string
 	######
@@ -60,7 +65,11 @@ def main():
 		if python_package:
 			print(f"Package {pkg.name} is a python package")
 			for p_ver in python_versions:
-				package_string += f"{indent}{pkg.name}_{p_ver} = p_{p_ver}.callPackage {str(pkg)} {{}};\n"
+				if pkg.name in limit_python_versions:
+					if p_ver not in limit_python_versions[pkg.name]:
+						continue
+
+				package_string += f"{indent}{pkg.name}_{p_ver} = p_{p_ver}.callPackage {str(pkg)} {{python-ver = {p_ver};}};\n"
 				output_packages.append(f"{pkg.name}_{p_ver}")
 		else:
 			print(f"Package {pkg.name} is not a python package")
