@@ -105,7 +105,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/virtual-puppet-project/vpuppr";
     license = licenses.mit;
     platforms = [ "x86_64-linux" ];
-    maintainers = with maintainers; [ jonboylecoding ];
+    #maintainers = with maintainers; [ jonboylecoding ];
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 
