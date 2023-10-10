@@ -8,11 +8,7 @@
 
 { pkgs ? import <nixpkgs> { } }:
 let
-	p_39 = pkgs.python39Packages;
-	p_310 = pkgs.python310Packages;
-	p_311 = pkgs.python311Packages;
-
-
+<<TEMPLATE_LET>>
 in
 {
 	# The `lib`, `modules`, and `overlay` names are special
@@ -23,9 +19,5 @@ in
 	# example-package = pkgs.callPackage ./pkgs/example-package { };
 	# some-qt5-package = pkgs.libsForQt5.callPackage ./pkgs/some-qt5-package { };
 	# ...
-	llama-cpp-python_39 = p_39.callPackage pkgs/llama-cpp-python {};
-	llama-cpp-python_310 = p_310.callPackage pkgs/llama-cpp-python {};
-	llama-cpp-python_311 = p_311.callPackage pkgs/llama-cpp-python {};
-
-
+<<TEMPLATE_PACKAGES>>
 }
