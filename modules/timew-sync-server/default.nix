@@ -29,6 +29,11 @@ in
       group = "timew-sync-server";
     };
 
+    users.groups.timew-sync-server = {
+      description = "Group for the timew-sync-server service";
+      isSystemGroup = true;
+    };
+
     systemd.services.timew-sync-server = {
       description = "timew-sync-server";
       after = [ "network-online.target" ];
@@ -44,7 +49,7 @@ in
         Group = "timew-sync-server";
         Restart = "on-failure";
 
-        ExecStart = "${pkgs.timew-sync-server}/bin/timew-server start --port ${toString cfg.port} --keys-location ${cfg.dataDir}/authorized_keys --sqlite-db ${cfg.dataDir}/db.sqlite";
+        ExecStart = "${pkgs.timew-sync-server}/bin/timew-sync-server start --port ${toString cfg.port} --keys-location ${cfg.dataDir}/authorized_keys --sqlite-db ${cfg.dataDir}/db.sqlite";
         Type = "simple";
       };
     };
