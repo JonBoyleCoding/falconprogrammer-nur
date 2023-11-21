@@ -2,11 +2,13 @@
   lib,
   fetchFromGitHub,
   gtk3,
+  gtk3-x11,
   gjs,
   libwnck,
   gdk-pixbuf,
   callPackage,
   nodejs,
+  wrapGAppsHook,
 }:
 let
   pnpm2nix = fetchFromGitHub {
@@ -33,11 +35,16 @@ mkPnpmPackage rec {
   };
 
   nativeBuildInputs = [
-    gtk3
+    nodejs.pkgs.pnpm
+    wrapGAppsHook
+  ];
+
+  buildInputs = [
     gjs
+    gtk3
+    gtk3-x11
     libwnck
     gdk-pixbuf
-    nodejs.pkgs.pnpm
   ];
 
 }
