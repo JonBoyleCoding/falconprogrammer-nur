@@ -31,6 +31,7 @@ in
 	timew-sync-client_310 = p_310.callPackage pkgs/timew-sync-client {python-ver = 310;};
 	timew-sync-client_311 = p_311.callPackage pkgs/timew-sync-client {python-ver = 311;};
 	vpuppr-gd3 = pkgs.callPackage pkgs/vpuppr-gd3 {};
+	xgen = pkgs.callPackage pkgs/xgen {};
 
 
 }
