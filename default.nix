@@ -25,8 +25,6 @@ in
 	alvr = pkgs.callPackage pkgs/alvr {};
 	g13d = pkgs.callPackage pkgs/g13d {};
 	gitignore-template = p_311.callPackage pkgs/gitignore-template {};
-	llama-cpp-python_310 = p_310.callPackage pkgs/llama-cpp-python {python-ver = 310;};
-	llama-cpp-python_311 = p_311.callPackage pkgs/llama-cpp-python {python-ver = 311;};
 	python-jwt_310 = p_310.callPackage pkgs/python-jwt {python-ver = 310;};
 	python-jwt_311 = p_311.callPackage pkgs/python-jwt {python-ver = 311;};
 	timew-sync-client = p_311.callPackage pkgs/timew-sync-client {};
