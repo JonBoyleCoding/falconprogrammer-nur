@@ -166,6 +166,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: "update-opencode-${{ steps.check_version.outputs.latest_version }}"
           title: "chore: update opencode v${{ steps.check_version.outputs.current_version }} → v${{ steps.check_version.outputs.latest_version }}"
+          commit-message: "chore: update opencode v${{ steps.check_version.outputs.current_version }} → v${{ steps.check_version.outputs.latest_version }}
+
+- Updated version from ${{ steps.check_version.outputs.current_version }} to ${{ steps.check_version.outputs.latest_version }}
+- Updated package hash to ${{ steps.update_package.outputs.new_hash }}
+- Automated update via GitHub Actions workflow"
           body: |
             Automated update of opencode package from v${{ steps.check_version.outputs.current_version }} to v${{ steps.check_version.outputs.latest_version }}.
 
