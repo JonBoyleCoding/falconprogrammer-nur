@@ -177,17 +177,22 @@ jobs:
           draft: ${{ steps.test_build.outputs.build_success == 'false' }}
           delete-branch: true
 
-      - name: Enable auto-merge for successful builds
+      - name: Auto-merge successful builds
         if: steps.test_build.outputs.build_success == 'true' && steps.create_pr.outputs.pull-request-number
         run: |
           PR_NUMBER="${{ steps.create_pr.outputs.pull-request-number }}"
-          echo "Enabling auto-merge for PR #$PR_NUMBER..."
+          echo "Attempting to auto-merge PR #$PR_NUMBER..."
           
-          # Enable auto-merge with squash strategy
-          gh pr merge $PR_NUMBER --auto --squash
-          
-          echo "✅ Auto-merge enabled for PR #$PR_NUMBER"
-          echo "PR will be automatically merged when all checks pass"
+          # Try auto-merge first (for repos with required checks)
+          if gh pr merge $PR_NUMBER --auto --squash 2>/dev/null; then
+            echo "✅ Auto-merge enabled for PR #$PR_NUMBER"
+            echo "PR will be automatically merged when all checks pass"
+          else
+            echo "Auto-merge not available (no required checks), merging directly..."
+            # Direct merge for repos without required status checks
+            gh pr merge $PR_NUMBER --squash
+            echo "✅ PR #$PR_NUMBER merged successfully"
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
