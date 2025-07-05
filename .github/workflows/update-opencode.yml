@@ -59,42 +59,23 @@ jobs:
         run: |
           LATEST_VERSION="${{ steps.check_version.outputs.latest_version }}"
           
-          # Update version in default.nix
-          sed -i "s/version = \"[^\"]*\"/version = \"$LATEST_VERSION\"/" pkgs/opencode-sst/default.nix
+          # Install nix-update
+          nix-env -iA nixpkgs.nix-update
           
-          # Calculate new hash using nix-prefetch-url for fetchzip
-          echo "Calculating hash for new version..."
+          # Use nix-update to update the package version and hash automatically
+          echo "Updating opencode-sst to version $LATEST_VERSION using nix-update..."
+          cd pkgs/opencode-sst
+          nix-update --version="$LATEST_VERSION" opencode-sst
+          cd ../..
           
-          # Create a temporary nix expression to get the correct fetchzip hash
-          cat > temp_fetchzip.nix << EOF
-          { pkgs ? import <nixpkgs> {} }:
-          pkgs.fetchzip {
-            url = "https://github.com/sst/opencode/releases/download/v${LATEST_VERSION}/opencode-linux-x64.zip";
-            hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-          }
-          EOF
+          # Get the new hash that was set by nix-update
+          NEW_HASH=$(grep 'hash = ' pkgs/opencode-sst/default.nix | sed 's/.*hash = "\([^"]*\)".*/\1/')
           
-          # Try to build it and capture the expected hash from the error
-          HASH_OUTPUT=$(nix-build temp_fetchzip.nix 2>&1 || true)
-          SRI_HASH=$(echo "$HASH_OUTPUT" | grep -o "sha256-[A-Za-z0-9+/=]*" | tail -1)
-          
-          # Clean up temp file
-          rm -f temp_fetchzip.nix
-          
-          if [ -z "$SRI_HASH" ]; then
-            echo "Failed to extract hash from nix-build output"
-            echo "Build output: $HASH_OUTPUT"
-            echo "hash_calculated=false" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-          
-          echo "New SRI hash: $SRI_HASH"
-          
-          # Update hash in default.nix
-          sed -i "s/hash = \"[^\"]*\"/hash = \"$SRI_HASH\"/" pkgs/opencode-sst/default.nix
+          echo "Updated to version: $LATEST_VERSION"
+          echo "New hash: $NEW_HASH"
           
           echo "hash_calculated=true" >> $GITHUB_OUTPUT
-          echo "new_hash=$SRI_HASH" >> $GITHUB_OUTPUT
+          echo "new_hash=$NEW_HASH" >> $GITHUB_OUTPUT
 
       - name: Test build
         if: steps.check_version.outputs.update_available == 'true' && steps.update_package.outputs.hash_calculated == 'true'
