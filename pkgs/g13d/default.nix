@@ -42,5 +42,6 @@ stdenv.mkDerivation rec {
     maintainers = with maintainers; [ ];
     mainProgram = "g13";
     platforms = platforms.all;
+    broken = true; # Compilation error in g13_stick.cpp line 76
   };
 }
