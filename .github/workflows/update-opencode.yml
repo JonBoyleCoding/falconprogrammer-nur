@@ -117,6 +117,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
+          # Delete existing branch if it exists (locally and remotely)
+          git branch -D "$BRANCH_NAME" 2>/dev/null || true
+          git push origin --delete "$BRANCH_NAME" 2>/dev/null || true
+          
           # Create and switch to new branch
           git checkout -b "$BRANCH_NAME"
           
