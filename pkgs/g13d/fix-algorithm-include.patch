@@ -1,5 +1,7 @@
---- g13_stick.cpp.orig	2025-07-05 12:41:37.117806330 +0100
-+++ g13_stick.cpp	2025-07-05 12:41:43.023136114 +0100
+diff --git a/g13_stick.cpp b/g13_stick.cpp
+index 4c13f83..987cd56 100644
+--- a/g13_stick.cpp
++++ b/g13_stick.cpp
 @@ -2,6 +2,7 @@
   * This file contains code for managing keys and profiles
   */
