@@ -62,21 +62,32 @@ jobs:
           # Update version in default.nix
           sed -i "s/version = \"[^\"]*\"/version = \"$LATEST_VERSION\"/" pkgs/opencode-sst/default.nix
           
-          # Calculate new hash using nix-prefetch-url for unpacked archive
+          # Calculate new hash using nix-prefetch-url for fetchzip
           echo "Calculating hash for new version..."
           
-          # Use nix-prefetch-url to get the hash for the unpacked zip
-          RAW_HASH=$(nix-prefetch-url --unpack "https://github.com/sst/opencode/releases/download/v${LATEST_VERSION}/opencode-linux-x64.zip" 2>/dev/null || echo "")
+          # Create a temporary nix expression to get the correct fetchzip hash
+          cat > temp_fetchzip.nix << EOF
+          { pkgs ? import <nixpkgs> {} }:
+          pkgs.fetchzip {
+            url = "https://github.com/sst/opencode/releases/download/v${LATEST_VERSION}/opencode-linux-x64.zip";
+            hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+          }
+          EOF
           
-          if [ -z "$RAW_HASH" ]; then
-            echo "Failed to calculate hash"
+          # Try to build it and capture the expected hash from the error
+          HASH_OUTPUT=$(nix-build temp_fetchzip.nix 2>&1 || true)
+          SRI_HASH=$(echo "$HASH_OUTPUT" | grep -o "sha256-[A-Za-z0-9+/=]*" | tail -1)
+          
+          # Clean up temp file
+          rm -f temp_fetchzip.nix
+          
+          if [ -z "$SRI_HASH" ]; then
+            echo "Failed to extract hash from nix-build output"
+            echo "Build output: $HASH_OUTPUT"
             echo "hash_calculated=false" >> $GITHUB_OUTPUT
             exit 1
           fi
           
-          # Convert to SRI format
-          SRI_HASH=$(nix hash to-sri --type sha256 "$RAW_HASH")
-          echo "Raw hash: $RAW_HASH"
           echo "New SRI hash: $SRI_HASH"
           
           # Update hash in default.nix
