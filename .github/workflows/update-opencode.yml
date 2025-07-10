@@ -97,13 +97,13 @@ jobs:
           echo "Updating opencode-sst to version $LATEST_VERSION using lightweight approach..."
           
           # Step 1: Update the version string
-          sed -i "s/version = \"[^\"]*\"/version = \"$LATEST_VERSION\"/" "$PACKAGE_FILE"
+          sed -i "s|version = \"[^\"]*\"|version = \"$LATEST_VERSION\"|" "$PACKAGE_FILE"
           
           # Step 2: Calculate new hash using Nix's error message approach
           echo "Calculating hash for new version..."
           
           # First, set a dummy hash to trigger Nix to tell us the correct one
-          sed -i "s/hash = \"[^\"]*\"/hash = \"sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\"/" "$PACKAGE_FILE"
+          sed -i "s|hash = \"[^\"]*\"|hash = \"sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\"|" "$PACKAGE_FILE"
           
           # Try to build and capture the error message with the correct hash
           echo "Getting correct hash from Nix..."
@@ -120,7 +120,8 @@ jobs:
           fi
           
           # Step 3: Update the hash in the file
-          sed -i "s/hash = \"[^\"]*\"/hash = \"$NEW_HASH\"/" "$PACKAGE_FILE"
+          # Use | as delimiter instead of / to avoid issues with special characters
+          sed -i "s|hash = \"[^\"]*\"|hash = \"$NEW_HASH\"|" "$PACKAGE_FILE"
           
           echo "Updated to version: $LATEST_VERSION"
           echo "New hash: $NEW_HASH"
