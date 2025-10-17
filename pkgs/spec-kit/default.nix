@@ -44,5 +44,6 @@ buildPythonApplication rec {
     license = licenses.mit;
     maintainers = with maintainers; [ ];
     mainProgram = "specify";
+    broken = lib.versionOlder truststore.version "0.10.4";
   };
 }
