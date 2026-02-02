@@ -40,7 +40,7 @@ jobs:
           # type: commit - tracks latest commit on specified branch
 
     # Skip if manual run specified a different package
-    if: ${{ github.event_name == 'schedule' || inputs.package == '' || inputs.package == matrix.package.name }}
+    if: github.event_name == 'schedule' || github.event.inputs.package == '' || github.event.inputs.package == null || github.event.inputs.package == matrix.package.name
 
     steps:
       - name: Checkout repository
