@@ -88,7 +88,7 @@ jobs:
 
             BRANCH="${{ matrix.package.branch }}"
             echo "Fetching latest commit from $BRANCH branch..."
-            API_RESPONSE=$(curl -s "https://api.github.com/repos/${{ matrix.package.owner }}/${{ matrix.package.repo }}/commits/$BRANCH")
+            API_RESPONSE=$(curl -sL "https://api.github.com/repos/${{ matrix.package.owner }}/${{ matrix.package.repo }}/commits/$BRANCH")
 
             LATEST_SHA=$(echo "$API_RESPONSE" | jq -r '.sha')
             COMMIT_DATE=$(echo "$API_RESPONSE" | jq -r '.commit.committer.date' | cut -d'T' -f1)
@@ -127,7 +127,7 @@ jobs:
             fi
 
             echo "Fetching latest version from GitHub API..."
-            API_RESPONSE=$(curl -s https://api.github.com/repos/${{ matrix.package.owner }}/${{ matrix.package.repo }}/releases/latest)
+            API_RESPONSE=$(curl -sL https://api.github.com/repos/${{ matrix.package.owner }}/${{ matrix.package.repo }}/releases/latest)
 
             if [ -z "$API_RESPONSE" ]; then
               echo "❌ Failed to fetch data from GitHub API"
