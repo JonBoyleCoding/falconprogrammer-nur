@@ -13,14 +13,14 @@
 
 buildPythonApplication rec {
   pname = "spec-kit";
-  version = "0.0.91";
+  version = "0.0.93";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "github";
     repo = "spec-kit";
     rev = "v${version}";
-    hash = "sha256-4Xe2dy5mb8g/IGl9piFkVoNa2bu3nypbBFw+BUe4Og8=";
+    hash = "sha256-XjlDQQSfFcau7ysWrSfLLLxWMwULPT5cVTYkr9B3f0Y=";
   };
 
   nativeBuildInputs = [
