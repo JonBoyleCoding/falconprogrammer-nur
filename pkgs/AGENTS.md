@@ -9,6 +9,7 @@ Nix package definitions consumed by `overlay.nix` and `flake.nix`; each subdirec
 | Directory | Description |
 |-----------|-------------|
 | [cco/](./cco/) | `stdenv.mkDerivation` for `cco` bubblewrap sandbox wrapper; produces `$out/bin/cco` and `$out/bin/cco-sandbox`. Linux-only. |
+| [spec-kit/](./spec-kit/) | `buildPythonApplication` for `spec-kit` v0.8.11; exposes `specify` CLI from `specify_cli` via `hatchling` build. |
 
 ## Structure
 

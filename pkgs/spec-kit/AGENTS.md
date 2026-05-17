@@ -2,25 +2,25 @@
 
 # spec-kit
 
-Nix derivation packaging `spec-kit` v0.0.91 as `buildPythonApplication`, exposing CLI entrypoint `specify` from module `specify_cli`.
+Nix derivation packaging `spec-kit` v0.8.11 as `buildPythonApplication`, exposing CLI entrypoint `specify` from module `specify_cli`.
 
 ## Contents
 
 | File | Description |
 |------|-------------|
-| [default.nix](./default.nix) | `buildPythonApplication` derivation for `spec-kit` v0.0.91; `pyproject=true`, build via `hatchling`, runtime deps `typer`, `rich`, `httpx`, `platformdirs`, `readchar`, `truststore`. |
+| [default.nix](./default.nix) | `buildPythonApplication` derivation for `spec-kit` v0.8.11; `pyproject=true`, build via `hatchling`, runtime deps `typer`, `click`, `rich`, `platformdirs`, `readchar`, `pyyaml`, `packaging`, `pathspec`, `json5`. |
 
 ## Stack
 
 - **Builder:** `hatchling` (PEP 517 pyproject build)
-- **Runtime deps:** `typer`, `rich`, `httpx`, `platformdirs`, `readchar`, `truststore`
+- **Runtime deps:** `typer`, `click`, `rich`, `platformdirs`, `readchar`, `pyyaml`, `packaging`, `pathspec`, `json5`
 - **Entry point:** `mainProgram = "specify"` → module `specify_cli`
 - **Nix pattern:** `buildPythonApplication` with `pythonImportsCheck = ["specify_cli"]`
 
 ## Behavioral Contracts
 
-- `broken = lib.versionOlder truststore.version "0.10.4"` — marks derivation broken if `truststore < 0.10.4`
-- Fetch hash: `sha256-4Xe2dy5mb8g/IGl9piFkVoNa2bu3nypbBFw+BUe4Og8=`
+- `broken = lib.versionOlder typer.version "0.24.0"` — marks derivation broken if `typer < 0.24.0`
+- Fetch hash: `sha256-2x6GEboJXm0LWByv+tXoNZrbrG12Fqd3ZGVrp/LzMNY=`
 
 ## File Relationships
 
