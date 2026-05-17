@@ -2,67 +2,24 @@
 
 # opencode-sst
 
-NixOS compatibility shim packaging `opencode` v1.0.45 with a runtime `patchelf` strategy that auto-patches TUI binaries downloaded to `~/.cache/opencode/` at invocation time, fixing ELF interpreter mismatch between upstream binaries and NixOS's `/nix/store`-only dynamic linker paths.
+Deprecated compatibility shim — emits `lib.warn` at eval time and delegates to `../opencode` via `callPackage`. No logic lives here; exists solely to preserve old attribute name during migration.
 
 ## Contents
 
-- [README.md](./README.md) — Documents problem, fix mechanism, entry points, and side effects; describes `patch-opencode-cache.sh` and `opencode` wrapper behavior.
-- [default.nix](./default.nix) — Full derivation: fetches pre-built zip from GitHub releases, installs `opencode-original`, generates `patch-opencode-cache.sh`, wraps binary with `wrapProgram`, sets `OPENCODE_NODEJS_PATH`/`LD_LIBRARY_PATH`/`PATCHELF_PATH`.
-
-## Architecture / Data Flow
-
-```
-opencode (wrapProgram wrapper)
-  │  sets PATH += nodejs patchelf binutils
-  │  sets OPENCODE_NODEJS_PATH, LD_LIBRARY_PATH, PATCHELF_PATH
-  ↓
-patch_cache function
-  │  find ~/.cache/opencode/ -executable
-  │  file … | grep "dynamically linked"
-  │  readelf -l … | grep "/nix/store.*ld-linux"  ← skip if already patched
-  │  patchelf --set-interpreter ${stdenv.cc.bintools.dynamicLinker}
-  ↓
-exec opencode-original "$@"
-```
-
-`autoPatchelfHook` patches the main binary ELF at build time; `patch_cache` handles runtime-downloaded TUI binaries at each invocation.
-
-## Platform Mapping
-
-`arch_string` in `default.nix` maps Nix platform → release archive name:
-
-| Nix platform | Archive arch string |
-|---|---|
-| `x86_64-linux` | `linux-x64` |
-| `aarch64-linux` | `linux-arm64` |
-| `x86_64-darwin` | `darwin-x64` |
-| `aarch64-darwin` | `darwin-arm64` |
-
-Unsupported platforms throw. Covers `lib.platforms.linux ++ lib.platforms.darwin`.
-
-## Installed Artifacts
-
-| Path | Description |
-|---|---|
-| `$out/bin/opencode` | `wrapProgram` wrapper; entry point |
-| `$out/share/opencode/opencode-original` | Raw upstream binary (`dontStrip=true`, `dontBuild=true`) |
-| `$out/share/opencode/patch-opencode-cache.sh` | Standalone manual patcher |
+| File | Description |
+|------|-------------|
+| [default.nix](./default.nix) | Deprecated alias: emits deprecation warning then delegates to `callPackage ../opencode {}`. |
 
 ## Behavioral Contracts
 
-ELF detection pipeline (verbatim logic from `default.nix`):
+Exact warning string emitted by `lib.warn` at eval time:
 
-- Find candidates: `find … -executable`
-- Confirm dynamic: `file … | grep "dynamically linked"`
-- Skip already-patched: `readelf -l … | grep "/nix/store.*ld-linux"`
-- Patch: `patchelf --set-interpreter ${stdenv.cc.bintools.dynamicLinker}`
+```
+opencode-sst has been renamed to opencode
+(upstream repository moved from sst/opencode to anomalyco/opencode).
+Please update your configuration to use `opencode` instead.
+```
 
-Source URL pattern: `https://github.com/sst/opencode/releases/download/v${version}/opencode-${arch_string stdenv.hostPlatform.system}.zip`
+## Migration
 
-Fixed hash: `sha256-YIsKMt9R9qM1nksPFLnP70oJFWebWkTDYlSmCvV5ei4=`
-
-`mainProgram = "opencode"`
-
-## File Relationships
-
-`default.nix` is the sole build artifact; `README.md` documents it. Package exposed to the flake via [`overlay.nix`](../../overlay.nix) and [`overlays/default.nix`](../../overlays/default.nix). Pattern matches sibling packages under [`pkgs/`](../).
+Replace `opencode-sst` → `opencode` in all Nix configurations. Target package lives at [`../opencode/`](../opencode/).
