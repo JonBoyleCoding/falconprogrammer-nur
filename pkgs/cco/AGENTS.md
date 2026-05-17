@@ -16,9 +16,10 @@ Two binaries built from `nikvdp/cco` rev `9744b9fce8f8db1deae20be4dfe430b7a05c2f
 
 - `$out/bin/cco` — wraps `share/cco/cco`; PATH-injects `bubblewrap git coreutils findutils gnused gnugrep gawk file procps docker`
 - `$out/bin/cco-sandbox` — wraps `share/cco/sandbox`; PATH-injects `bubblewrap coreutils findutils file`
+- `$out/share/cco/lib/` — runtime lib modules
 - `$out/share/cco/seccomp/` — seccomp BPF filter files
 
-Both binaries receive `CCO_INSTALL_DIR=$out/share/cco` via `makeWrapper`.
+Both binaries receive `CCO_INSTALLATION_DIR=$out/share/cco` via `makeWrapper`.
 
 ## Behavioral Contracts
 
