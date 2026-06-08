@@ -35,6 +35,7 @@ def main():
 	limit_python_versions = {
 		"llama-cpp-python": ["310", "311"],
 		"cursebreaker": ["311"],
+		"python-jwt": ["312", "313"],
 	}
 
 	######
