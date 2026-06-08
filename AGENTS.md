@@ -8,7 +8,7 @@ Personal NUR (Nix User Repository) for `JonBoyleCoding/falconprogrammer-nur`: ex
 
 ### Package Manifests
 
-- [default.nix](./default.nix) — Top-level manifest; exports `lib`, `modules`, `overlays`, and all package derivations (`alvr`, `cco`, `g13d`, `opencode`, `opencode-sst`, `vpuppr-gd3`, `xgen` via `pkgs.callPackage`; `gitignore-template`, `spec-kit`, `timew-sync-client` via `p_312.callPackage`; `python-jwt_312/313` via `p_3xx.callPackage`). **Do not hand-edit — regenerate via `update-pkgs.py`.**
+- [default.nix](./default.nix) — Top-level manifest; exports `lib`, `modules`, `overlays`, and all package derivations (`alvr`, `cco`, `g13d`, `opencode`, `opencode-sst`, `vpuppr-gd3`, `xgen` via `pkgs.callPackage`; `gitignore-template`, `spec-kit`, `timew-sync-client` via `p_313.callPackage`, `hyuga` via `p_312.callPackage`; `python-jwt_312/313` via `p_3xx.callPackage`). **Do not hand-edit — regenerate via `update-pkgs.py`.**
 - [flake.nix](./flake.nix) — Flake entry point; outputs `legacyPackages`, `packages`, `nixosModules`, `devShells.default` across 7 systems. Imports `nixpkgs` pinned to `nixpkgs-unstable`. `forAllSystems` helper drives per-system generation.
 - [ci.nix](./ci.nix) — CI consumption target; exports `buildPkgs`/`cachePkgs` (filtered by `isBuildable`/`isCacheable`) and `buildOutputs`/`cacheOutputs` flat lists via `flattenPkgs` recursion.
 - [overlay.nix](./overlay.nix) — Nixpkgs overlay form of NUR packages; injects non-reserved attrs from `./default.nix { pkgs = super; }` into overlay `self`.
@@ -66,9 +66,10 @@ Personal NUR (Nix User Repository) for `JonBoyleCoding/falconprogrammer-nur`: ex
 `update-pkgs.py` constants (verbatim):
 ```python
 python_versions = ["311", "312", "313"]
-python_app_version = "312"
+python_app_version = "313"
 ignore_list = ["example-package", "polydock", "cursebreaker", "pyinstaller"]
 limit_python_versions = {"llama-cpp-python": ["310", "311"], "cursebreaker": ["311"], "python-jwt": ["312", "313"]}
+limit_python_app_versions = {"hyuga": "312"}
 ```
 
 Template injection tags (verbatim): `<<TEMPLATE_LET>>`, `<<TEMPLATE_PACKAGES>>`
