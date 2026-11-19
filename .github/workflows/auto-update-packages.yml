@@ -23,9 +23,20 @@ jobs:
       max-parallel: 1  # Each job pushes to the default branch, so jobs run one at a time
       matrix:
         package:
-          - cco
-          - opencode
-          - spec-kit
+          - name: alvr
+            attr: alvr
+          - name: cco
+            attr: cco
+          - name: opencode
+            attr: opencode
+          - name: python-jwt
+            attr: python-jwt_313
+          - name: spec-kit
+            attr: spec-kit
+          - name: timew-sync-client
+            attr: timew-sync-client
+          - name: xgen
+            attr: xgen
           # Add more packages here once they have an entry in nvfetcher.toml
 
     steps:
@@ -36,11 +47,11 @@ jobs:
             echo "run=true" >> $GITHUB_OUTPUT
           elif [[ -z "${{ github.event.inputs.package }}" ]]; then
             echo "run=true" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event.inputs.package }}" == "${{ matrix.package }}" ]]; then
+          elif [[ "${{ github.event.inputs.package }}" == "${{ matrix.package.name }}" ]]; then
             echo "run=true" >> $GITHUB_OUTPUT
           else
             echo "run=false" >> $GITHUB_OUTPUT
-            echo "Skipping ${{ matrix.package }} - not selected"
+            echo "Skipping ${{ matrix.package.name }} - not selected"
           fi
       - name: Checkout repository
         if: steps.should_run.outputs.run == 'true'
@@ -61,15 +72,15 @@ jobs:
         if: steps.should_run.outputs.run == 'true'
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Update ${{ matrix.package }} sources
+      - name: Update ${{ matrix.package.name }} sources
         if: steps.should_run.outputs.run == 'true'
         id: update_sources
         run: |
-          NAME="${{ matrix.package }}"
+          NAME="${{ matrix.package.name }}"
           KEYFILE="$RUNNER_TEMP/nvfetcher-keyfile.toml"
           printf '[keys]\ngithub = "%s"\n' "$GH_TOKEN" > "$KEYFILE"
 
-          nix develop --command nvfetcher --keyfile "$KEYFILE" --filter "^${NAME}$"
+          nix develop --command nvfetcher --keyfile "$KEYFILE" --filter "^${NAME}(-.+)?$"
 
           if git diff --quiet -- _sources; then
             echo "No update available for $NAME"
@@ -95,7 +106,7 @@ jobs:
         run: |
           echo "Testing build of updated package..."
 
-          if nix build .#${{ matrix.package }} --no-link --print-build-logs; then
+          if nix build .#${{ matrix.package.attr }} --no-link --print-build-logs; then
             echo "Build successful!"
             echo "build_success=true" >> $GITHUB_OUTPUT
           else
@@ -112,9 +123,9 @@ jobs:
       - name: Close existing update PRs
         if: steps.should_run.outputs.run == 'true' && steps.update_sources.outputs.update_available == 'true'
         run: |
-          echo "Checking for existing ${{ matrix.package }} update PRs to close..."
+          echo "Checking for existing ${{ matrix.package.name }} update PRs to close..."
 
-          EXISTING_PRS=$(gh pr list --state open --json number,title --jq '.[] | select(.title | startswith("chore: update ${{ matrix.package }}")) | .number')
+          EXISTING_PRS=$(gh pr list --state open --json number,title --jq '.[] | select(.title | startswith("chore: update ${{ matrix.package.name }}")) | .number')
 
           if [ -n "$EXISTING_PRS" ]; then
             echo "Found existing PRs: $EXISTING_PRS"
@@ -131,9 +142,9 @@ jobs:
       - name: Delete existing update branches
         if: steps.should_run.outputs.run == 'true' && steps.update_sources.outputs.update_available == 'true'
         run: |
-          echo "Checking for existing ${{ matrix.package }} update branches..."
+          echo "Checking for existing ${{ matrix.package.name }} update branches..."
 
-          EXISTING_BRANCHES=$(git branch -r | grep "origin/update-${{ matrix.package }}-" | sed 's/origin\///' | xargs)
+          EXISTING_BRANCHES=$(git branch -r | grep "origin/update-${{ matrix.package.name }}-" | sed 's/origin\///' | xargs)
 
           if [ -n "$EXISTING_BRANCHES" ]; then
             echo "Found existing branches: $EXISTING_BRANCHES"
@@ -149,7 +160,7 @@ jobs:
         if: steps.should_run.outputs.run == 'true' && steps.update_sources.outputs.update_available == 'true' && steps.test_build.outputs.build_success == 'true'
         run: |
           git add _sources
-          git commit -m "chore: update ${{ matrix.package }} v${{ steps.update_sources.outputs.current_version }} → v${{ steps.update_sources.outputs.latest_version }}"
+          git commit -m "chore: update ${{ matrix.package.name }} v${{ steps.update_sources.outputs.current_version }} → v${{ steps.update_sources.outputs.latest_version }}"
           git push origin "HEAD:${{ github.event.repository.default_branch }}"
 
       - name: Create Pull Request for failed build
@@ -158,16 +169,16 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: "update-${{ matrix.package }}-${{ steps.update_sources.outputs.latest_version }}"
-          title: "chore: update ${{ matrix.package }} v${{ steps.update_sources.outputs.current_version }} → v${{ steps.update_sources.outputs.latest_version }}"
+          branch: "update-${{ matrix.package.name }}-${{ steps.update_sources.outputs.latest_version }}"
+          title: "chore: update ${{ matrix.package.name }} v${{ steps.update_sources.outputs.current_version }} → v${{ steps.update_sources.outputs.latest_version }}"
           commit-message: |
-            chore: update ${{ matrix.package }} v${{ steps.update_sources.outputs.current_version }} → v${{ steps.update_sources.outputs.latest_version }}
+            chore: update ${{ matrix.package.name }} v${{ steps.update_sources.outputs.current_version }} → v${{ steps.update_sources.outputs.latest_version }}
 
             - Updated version from ${{ steps.update_sources.outputs.current_version }} to ${{ steps.update_sources.outputs.latest_version }}
             - Regenerated `_sources` with nvfetcher
             - Automated update via GitHub Actions workflow
           body: |
-            Automated update of ${{ matrix.package }} package from v${{ steps.update_sources.outputs.current_version }} to v${{ steps.update_sources.outputs.latest_version }}.
+            Automated update of ${{ matrix.package.name }} package from v${{ steps.update_sources.outputs.current_version }} to v${{ steps.update_sources.outputs.latest_version }}.
 
             ❌ **Build Status**: Failed - Requires manual review
             🔄 **Auto-generated**: This PR was created by the automated update workflow.
@@ -181,7 +192,7 @@ jobs:
       - name: Summary
         if: always() && steps.should_run.outputs.run == 'true'
         run: |
-          echo "### ${{ matrix.package }} Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "### ${{ matrix.package.name }} Update Summary" >> $GITHUB_STEP_SUMMARY
 
           if [ "${{ steps.update_sources.outputs.update_available }}" == "true" ]; then
             echo "✅ Update check completed" >> $GITHUB_STEP_SUMMARY

@@ -143,7 +143,7 @@ To add a package to the automated updates:
 1. Add a table to `nvfetcher.toml` with a version source (`src.*`) and a fetcher (`fetch.*`)
 2. Run `nvfetcher --filter '^<name>$'`
 3. Take `version` and `src` from `_sources/generated.nix` in the package's `default.nix`
-4. Add the name to the matrix in `.github/workflows/auto-update-packages.yml`
+4. Add the name and the flake attribute to build to the matrix in `.github/workflows/auto-update-packages.yml`
 
 ## Flake Structure
 
