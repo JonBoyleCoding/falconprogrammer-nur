@@ -11,6 +11,9 @@
 , packaging
 , pathspec
 , json5
+, mcp
+, pydantic
+, lark
 , ...
 }:
 
@@ -40,6 +43,9 @@ buildPythonApplication rec {
     packaging
     pathspec
     json5
+    mcp
+    pydantic
+    lark
   ];
 
   pythonImportsCheck = [ "specify_cli" ];
