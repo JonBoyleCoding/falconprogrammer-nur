@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false  # Continue updating other packages even if one fails
+      max-parallel: 1  # Each job pushes to the default branch, so jobs run one at a time
       matrix:
         package:
           - cco
@@ -144,8 +145,15 @@ jobs:
             echo "No existing update branches found"
           fi
 
-      - name: Create Pull Request
-        if: steps.should_run.outputs.run == 'true' && steps.update_sources.outputs.update_available == 'true'
+      - name: Commit successful build to the default branch
+        if: steps.should_run.outputs.run == 'true' && steps.update_sources.outputs.update_available == 'true' && steps.test_build.outputs.build_success == 'true'
+        run: |
+          git add _sources
+          git commit -m "chore: update ${{ matrix.package }} v${{ steps.update_sources.outputs.current_version }} → v${{ steps.update_sources.outputs.latest_version }}"
+          git push origin "HEAD:${{ github.event.repository.default_branch }}"
+
+      - name: Create Pull Request for failed build
+        if: steps.should_run.outputs.run == 'true' && steps.update_sources.outputs.update_available == 'true' && steps.test_build.outputs.build_success == 'false'
         id: create_pr
         uses: peter-evans/create-pull-request@v7
         with:
@@ -161,35 +169,14 @@ jobs:
           body: |
             Automated update of ${{ matrix.package }} package from v${{ steps.update_sources.outputs.current_version }} to v${{ steps.update_sources.outputs.latest_version }}.
 
-            ${{ steps.test_build.outputs.build_success == 'true' && '✅ **Build Status**: Successful - Will auto-merge' || '❌ **Build Status**: Failed - Requires manual review' }}
+            ❌ **Build Status**: Failed - Requires manual review
             🔄 **Auto-generated**: This PR was created by the automated update workflow.
 
             **Changes:**
             - Updated version from ${{ steps.update_sources.outputs.current_version }} to ${{ steps.update_sources.outputs.latest_version }}
             - Regenerated `_sources` with nvfetcher
-
-            **Verification:**
-            - Package builds successfully with Nix
-            - All dependencies resolved correctly
-          draft: ${{ steps.test_build.outputs.build_success == 'false' }}
+          draft: true
           delete-branch: true
-
-      - name: Auto-merge successful builds
-        if: steps.should_run.outputs.run == 'true' && steps.test_build.outputs.build_success == 'true' && steps.create_pr.outputs.pull-request-number
-        run: |
-          PR_NUMBER="${{ steps.create_pr.outputs.pull-request-number }}"
-          echo "Attempting to auto-merge PR #$PR_NUMBER..."
-
-          if gh pr merge $PR_NUMBER --auto --squash 2>/dev/null; then
-            echo "✅ Auto-merge enabled for PR #$PR_NUMBER"
-            echo "PR will be automatically merged when all checks pass"
-          else
-            echo "Auto-merge not available, merging directly..."
-            gh pr merge $PR_NUMBER --squash
-            echo "✅ PR #$PR_NUMBER merged successfully"
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Summary
         if: always() && steps.should_run.outputs.run == 'true'
@@ -201,7 +188,7 @@ jobs:
             echo "📦 Version: ${{ steps.update_sources.outputs.current_version }} → ${{ steps.update_sources.outputs.latest_version }}" >> $GITHUB_STEP_SUMMARY
 
             if [ "${{ steps.test_build.outputs.build_success }}" == "true" ]; then
-              echo "🚀 Build successful - PR auto-merged" >> $GITHUB_STEP_SUMMARY
+              echo "🚀 Build successful - committed to the default branch" >> $GITHUB_STEP_SUMMARY
             else
               echo "⚠️  Build failed - Draft PR created for manual review" >> $GITHUB_STEP_SUMMARY
             fi
