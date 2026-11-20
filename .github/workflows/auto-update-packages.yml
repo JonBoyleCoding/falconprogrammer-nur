@@ -177,7 +177,7 @@ jobs:
       - name: Create Pull Request for failed build
         if: steps.should_run.outputs.run == 'true' && steps.update_sources.outputs.update_available == 'true' && steps.test_build.outputs.build_success == 'false'
         id: create_pr
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: "update-${{ matrix.package.name }}-${{ steps.update_sources.outputs.latest_version }}"
